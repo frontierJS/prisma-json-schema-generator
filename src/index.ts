@@ -8,7 +8,7 @@ import { parseEnvValue } from '@prisma/sdk'
 generatorHandler({
     onManifest() {
         return {
-            defaultOutput: './json-schemax',
+            defaultOutput: './.json',
             prettyName: 'Prisma JSON Schema Generator Extended',
         }
     },
@@ -32,7 +32,7 @@ generatorHandler({
         if (!prop || prop.type !== 'comment') return meta
 
         const key = this.metaKey
-        console.log('key', key)
+        // console.log('key', key)
         if (!prop.text.startsWith(key)) return meta
 
         const json = this.convertToJson(prop.text.substr(key.length))
@@ -43,7 +43,6 @@ generatorHandler({
     },
     appendMeta(modelDefs, jsonSchema) {
         Object.entries(modelDefs).forEach(([name, { properties }]) => {
-            console.log(name, properties)
             const schema = jsonSchema.definitions[name].properties
             Object.entries(properties).forEach(([key, value]) => {
                 schema[key] = {
@@ -54,7 +53,13 @@ generatorHandler({
         })
     },
     async onGenerate(options) {
-        // console.log('gen has config vars', options.generator)
+        console.log(options)
+        const schemaRoot = path.dirname(options.schemaPath)
+
+        const outputPaths = options.generator.config.outputs
+            .split(',')
+            .map((str) => str.trim())
+            .concat(path.resolve(schemaRoot, './.json'))
         // get parsed datamodel with comments
         const { list } = getSchema(options.datamodel)
         const { metaKey = 'meta' } = options.generator.config
@@ -66,12 +71,12 @@ generatorHandler({
             acc[item.name] = { __meta: this.getMeta({}, idx - 1, array) }
 
             acc[item.name].properties = (item.properties || []).reduce(
-                (propAcc, field, idxx, arrayx) => {
+                (propAcc, field, idx, arr) => {
                     if (field.type !== 'field') return propAcc
 
                     propAcc[field.name] = {
                         ...field,
-                        __meta: this.getMeta({}, idxx - 1, arrayx),
+                        __meta: this.getMeta({}, idx - 1, arr),
                     }
                     return propAcc
                 },
@@ -83,33 +88,44 @@ generatorHandler({
 
         const jsonSchema = transformDMMF(options.dmmf, options.generator.config)
         this.appendMeta(modelDefs, jsonSchema)
-        console.log(JSON.stringify(jsonSchema))
 
-        if (options.generator.output) {
-            const outputDir =
-                // This ensures previous version of prisma are still supported
-                typeof options.generator.output === 'string'
-                    ? (options.generator.output as unknown as string)
-                    : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                      parseEnvValue(options.generator.output)
-            try {
-                await fs.promises.mkdir(outputDir, {
-                    recursive: true,
-                })
-                await fs.promises.writeFile(
-                    path.join(outputDir, 'json-schema.json'),
-                    JSON.stringify(jsonSchema, null, 2),
-                )
-            } catch (e) {
-                console.error(
-                    'Error: unable to write files for Prisma Schema Generator',
-                )
-                throw e
-            }
-        } else {
+        if (!outputPaths.length) {
             throw new Error(
                 'No output was specified for Prisma Schema Generator',
             )
+        }
+
+        const outputDirs = outputPaths
+            .map((path) => {
+                const matches = path.matchAll(/env\((.*)\)/g)
+                const res = [...matches]
+                if (!res.length) {
+                    return {
+                        value: path.resolve(schemaRoot, path),
+                    }
+                }
+
+                return {
+                    fromEnvVar: res[0][1],
+                }
+            })
+            .map(parseEnvValue)
+
+        try {
+            for await (const outputPath of outputDirs) {
+                await fs.promises.mkdir(outputPath, {
+                    recursive: true,
+                })
+                await fs.promises.writeFile(
+                    path.join(outputPath, 'json-schema.json'),
+                    JSON.stringify(jsonSchema, null, 2),
+                )
+            }
+        } catch (e) {
+            console.error(
+                'Error: unable to write files for Prisma Schema Generator',
+            )
+            throw e
         }
     },
 })
