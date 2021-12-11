@@ -46,3 +46,4 @@ dist/
 # Prisma related files
 dmmf.json
 
+.json

@@ -1,16 +1,12 @@
 {
-  "name": "prisma-json-schema-generator",
+  "name": "prisma-jsg",
   "version": "1.5.0",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
     "dist"
   ],
-  "description": "JSON generator for prisma schema",
-  "author": {
-    "name": "Valentin Palkovic",
-    "email": "dev@valentinpalkovic.dev"
-  },
+  "description": "JSON generator for prisma schema (with comments)",
   "keywords": [
     "prisma2",
     "prisma",
@@ -19,14 +15,6 @@
     "code-generation",
     "json"
   ],
-  "homepage": "https://github.com/valentinpalkovic/prisma-json-schema-generator",
-  "repository": {
-    "url": "https://github.com/valentinpalkovic/prisma-json-schema-generator.git"
-  },
-  "bugs": {
-    "email": "bugs@valentinpalkovic.dev",
-    "url": "https://github.com/valentinpalkovic/prisma-json-schema-generator/issues"
-  },
   "dependencies": {
     "@mrleebo/prisma-ast": "^0.2.6",
     "@prisma/generator-helper": "^3.0.1",
@@ -76,13 +64,7 @@
     "lint:fix": "npm run lint --fix",
     "semantic-release": "semantic-release"
   },
-  "prettier": {
-    "tabWidth": 4,
-    "singleQuote": true,
-    "semi": false,
-    "trailingComma": "all"
-  },
   "bin": {
-    "prisma-json-schema-generator": "dist/cli.js"
+    "prisma-jsg": "dist/cli.js"
   }
 }

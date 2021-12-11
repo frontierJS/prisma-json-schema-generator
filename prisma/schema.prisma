@@ -4,7 +4,7 @@ generator client {
 
 generator docs {
   provider = "node ./dist/index.js"
-  outputs = "./json-schemas , env(DB_PATH)"
+  // output = env("DB_PATH")
 }
 
 datasource db {
@@ -24,8 +24,11 @@ model User {
   predecessor User?    @relation("BlogOwnerHistory")
   role        Role     @default(USER)
   posts       Post[]
+
   // meta: minItems:2 monkey:"three"
+  // meta: maxItems:1 monkeies:"three"
   keywords    String[]
+
   biography   Json
 }
 
