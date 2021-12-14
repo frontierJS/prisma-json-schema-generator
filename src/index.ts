@@ -8,9 +8,82 @@ import { parseEnvValue } from "@prisma/sdk";
 generatorHandler({
   onManifest() {
     return {
-      defaultOutput: "./.json",
-      prettyName: "Prisma JSON Schema Generator Extended",
+      defaultOutput: "../.json",
+      prettyName: "Frontier models JSON schemas",
     };
+  },
+  getDataModelDefinitions(options) {
+    const { list } = getSchema(options.datamodel);
+
+    return list.reduce((acc, item, idx, array) => {
+      if (item.type !== "model") return acc;
+
+      acc[item.name] = { __attributes: this.getAttributes({}, idx - 1, array) };
+
+      acc[item.name].properties = (item.properties || []).reduce(
+        (propAcc, field, idx, arr) => {
+          if (field.type !== "field") return propAcc;
+
+          propAcc[field.name] = {
+            ...field,
+            __attributes: this.getAttributes({}, idx - 1, arr),
+          };
+          return propAcc;
+        },
+        {}
+      );
+
+      return acc;
+    }, {});
+  },
+  async onGenerate(options) {
+    this.schemaRoot = path.dirname(options.schemaPath);
+
+    // Output Paths
+    this.outputPaths = this.getOutputPaths(options);
+
+    // Attributes Key
+    const { attributesKey = "@" } = options.generator.config;
+    this.attributesKey = "//" + attributesKey + " ";
+
+    // JSON Schema from prisma-json-schema-generator
+    this.jsonSchema = transformDMMF(options.dmmf, options.generator.config);
+
+    // Datamodel definitions with comments
+    const modelDefs = this.getDataModelDefinitions(options);
+
+    // Merge fields with comments to JSON schema
+    this.appendAttributesToJsonSchema(modelDefs);
+
+    // Send to outputs
+    await this.sendToOutputs(options);
+  },
+  getOutputPaths(options) {
+    return (
+      (options.generator.config.outputs || "") +
+      ", " +
+      options.generator.output.value
+    )
+      .split(",")
+      .filter(Boolean)
+      .map((str) => str.trim());
+  },
+  tryParseJSON(jsonString) {
+    try {
+      const o = JSON.parse(jsonString);
+      // Handle non-exception-throwing cases:
+      // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
+      // but... JSON.parse(null) returns null, and typeof null === "object",
+      // so we must check for that, too. Thankfully, null is falsey, so this suffices:
+      if (o && typeof o === "object") {
+        return o;
+      } else {
+        console.log("ERROR::: in db.js:", { o });
+      }
+    } catch (e) {
+      console.log({ e });
+      return jsonString;
+    }
   },
   convertToJson(text) {
     const stringifyKeys = (obj) =>
@@ -23,89 +96,88 @@ generatorHandler({
     text = "{" + text.trim().split(" ").join(",") + "}";
     const jsonString = stringifyKeys(text);
 
-    return JSON.parse(jsonString);
+    return this.tryParseJSON(jsonString);
   },
-  getMeta(meta, index, array) {
+  getAttributes(attributes, index, array) {
     const prop = array[index];
-    if (!prop || prop.type !== "comment") return meta;
+    if (!prop || prop.type !== "comment") return attributes;
 
-    const key = this.metaKey;
+    const key = this.attributesKey;
     // console.log('key', key)
-    if (!prop.text.startsWith(key)) return meta;
+    if (!prop.text.startsWith(key)) return attributes;
 
     const json = this.convertToJson(prop.text.substr(key.length));
-    meta = { ...meta, ...json };
+    attributes = { ...attributes, ...json };
     index--;
 
-    return this.getMeta(meta, index, array);
+    return this.getAttributes(attributes, index, array);
   },
-  appendMeta(modelDefs, jsonSchema) {
-    Object.entries(modelDefs).forEach(([name, { properties }]) => {
-      const schema = jsonSchema.definitions[name].properties;
-      Object.entries(properties).forEach(([key, value]) => {
-        schema[key] = {
-          ...schema[key],
-          ...value.__meta,
-        };
-      });
-    });
+
+  processExtraSchemaValues(model, key, value, prismaModelProps) {
+    let field = model.properties[key];
+    const { __attributes, ...prismaProps } = prismaModelProps;
+    // prismaProps might only be used for it's optional field
+    // and attrs for default
+
+    field = {
+      ...field,
+      ...__attributes,
+      // __prisma: ,
+    };
+
+    // Add default attribute to schema
+    const defaultAttr = (prismaModelProps.attributes || []).find(
+      (attr) => attr.name === "default"
+    );
+    if (
+      defaultAttr &&
+      defaultAttr.args &&
+      defaultAttr.args.length &&
+      typeof defaultAttr.args[0].value === "string"
+    ) {
+      field.default = defaultAttr.args[0].value;
+    }
+
+    // Add prisma attributes
+    // field.__prisma = {
+    //     __fromAttributes: __attributes,
+    //   ...__attributes,
+    //   ...prismaProps,
+    // };
+    // console.log(field);
+    model.properties[key] = field;
   },
-  async onGenerate(options) {
-    // console.log(options)
-    const schemaRoot = path.dirname(options.schemaPath);
-
-    const outputPaths = (
-      (options.generator.config.outputs || "") +
-      ", " +
-      options.generator.output.value
-    )
-      .split(",")
-      .filter(Boolean)
-      .map((str) => str.trim());
-    // get parsed datamodel with comments
-    const { list } = getSchema(options.datamodel);
-    const { metaKey = "meta" } = options.generator.config;
-    this.metaKey = "// " + metaKey + ": ";
-
-    const modelDefs = list.reduce((acc, item, idx, array) => {
-      if (item.type !== "model") return acc;
-
-      acc[item.name] = { __meta: this.getMeta({}, idx - 1, array) };
-
-      acc[item.name].properties = (item.properties || []).reduce(
-        (propAcc, field, idx, arr) => {
-          if (field.type !== "field") return propAcc;
-
-          propAcc[field.name] = {
-            ...field,
-            __meta: this.getMeta({}, idx - 1, arr),
-          };
-          return propAcc;
-        },
-        {}
-      );
-
-      return acc;
-    }, {});
-
-    const jsonSchema = transformDMMF(options.dmmf, options.generator.config);
-    this.appendMeta(modelDefs, jsonSchema);
-
-    if (!outputPaths.length || !options.generator.output) {
+  appendAttributesToJsonSchema(modelDefs) {
+    // console.log(
+    //   JSON.stringify(modelDefs),
+    //   "\n\n",
+    //   JSON.stringify(this.jsonSchema)
+    // );
+    Object.entries(modelDefs).forEach(
+      ([name, { __attributes, properties }]) => {
+        const model = this.jsonSchema.definitions[name];
+        model.__attributes = __attributes;
+        Object.entries(model.properties).forEach(([key, value]) => {
+          this.processExtraSchemaValues(model, key, value, properties[key]);
+        });
+      }
+    );
+  },
+  async sendToOutputs(options) {
+    if (!this.outputPaths.length || !options.generator.output) {
       throw new Error("No output was specified for Prisma Schema Generator");
     }
 
-    if (options.generator.output) {
-      outputPaths.push(options.generator.output.value);
-    }
     // parse from `config.outputs` : string
-    const outputDirs = outputPaths
+    const outputDirs = this.outputPaths
       .map((outputPath) => {
-        const matches = outputPath.matchAll(/env\((.*)\)/g);
+        console.log("Sending schema to", outputPath);
+        const matches = outputPath.matchAll(/env\('(.*)'\)/g);
         const res = [...matches];
         if (!res.length) {
+          // console.log(path.resolve(this.schemaRoot, outputPath));
           return {
-            value: path.resolve(schemaRoot, outputPath),
+            value: path.resolve(this.schemaRoot, outputPath),
           };
         }
 
@@ -117,14 +189,19 @@ generatorHandler({
 
     try {
       for await (const outputPath of outputDirs) {
+        // console.log({ outputPath });
         await fs.promises.mkdir(outputPath, {
           recursive: true,
         });
         await fs.promises.writeFile(
-          path.join(outputPath, "json-schema.json"),
-          JSON.stringify(jsonSchema, null, 2)
+          path.join(
+            outputPath,
+            options.generator.config.fileName || "models-schema.json"
+          ),
+          JSON.stringify(this.jsonSchema, null, 2)
         );
       }
+      // TODO : get client path and add modelDefs there as well
     } catch (e) {
       console.error("Error: unable to write files for Prisma Schema Generator");
       throw e;

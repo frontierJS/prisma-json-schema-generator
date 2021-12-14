@@ -4,7 +4,7 @@ generator client {
 
 generator docs {
   provider = "node ./dist/index.js"
-  // output = env("DB_PATH")
+  outputs = "env('DB_PATH'), env('TEST_PATH')"
 }
 
 datasource db {
@@ -13,10 +13,11 @@ datasource db {
 }
 
 model User {
+  //@ cool:"prop"
   id          Int      @id @default(autoincrement())
   createdAt   DateTime @default(now())
   email       String   @unique
-  weight      Float?
+  weight      Float?   @default(2.3)
   is18        Boolean?
   name        String?
   successorId Int?
@@ -25,17 +26,18 @@ model User {
   role        Role     @default(USER)
   posts       Post[]
 
-  // meta: minItems:2 monkey:"three"
-  // meta: maxItems:1 monkeies:"three"
-  keywords    String[]
+  //@ minItems:2 monkey:"three"
+  //@ maxItems:1 monkeies:"three"
+  keywords String[]
 
-  biography   Json
+  biography Json
 }
 
 model Post {
-  id     Int   @id @default(autoincrement())
-  user   User? @relation(fields: [userId], references: [id])
-  userId Int?
+  id           Int     @id @default(autoincrement())
+  user         User   @relation(fields: [userId], references: [id])
+  userId       Int
+  monkeyWrench String @default("tool")
 }
 
 enum Role {

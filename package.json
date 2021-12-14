@@ -1,6 +1,6 @@
 {
-  "name": "prisma-jsg",
-  "version": "1.5.0",
+  "name": "prisma-generator-frontier",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "license": "MIT",
   "files": [
@@ -58,13 +58,13 @@
     "generate": "prisma generate",
     "clean": "rm -rf dist",
     "type-check": "tsc",
-    "build": "npm run clean && babel src --out-dir dist --extensions '.ts'",
+    "build": "npm run clean && babel src --out-dir dist --extensions '.ts' && chmod +x dist/cli.js",
     "test": "jest src",
     "lint": "eslint --ext .ts \"src/**/*.ts\"",
     "lint:fix": "npm run lint --fix",
     "semantic-release": "semantic-release"
   },
   "bin": {
-    "prisma-jsg": "dist/cli.js"
+    "prisma-generator-frontierjs": "dist/cli.js"
   }
 }
