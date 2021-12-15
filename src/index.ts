@@ -37,6 +37,7 @@ generatorHandler({
     }, {});
   },
   async onGenerate(options) {
+    console.log(options);
     this.schemaRoot = path.dirname(options.schemaPath);
 
     // Output Paths
@@ -112,17 +113,51 @@ generatorHandler({
 
     return this.getAttributes(attributes, index, array);
   },
+  parseFrontierMinAndMaxHelpers(attributes, field) {
+    const type = Array.isArray(field.type) ? field.type[0] : field.type;
+    console.log(field);
 
+    const map = {
+      "number-min": "minimum",
+      "number-max": "maximum",
+      "int-max": "maximum",
+      "int-min": "minimum",
+      "int-max": "maximum",
+      "string-min": "minLength",
+      "string-max": "maxLength",
+      "array-min": "minItems",
+      "array-max": "maxItems",
+      "object-min": "minProperties",
+      "object-max": "maxProperties",
+    };
+
+    if (attributes.min) {
+      const attr = map[type + "-min"] || "min";
+      field[attr] = attributes.min;
+      delete attributes.min;
+    }
+
+    if (attributes.max) {
+      const attr = map[type + "-max"] || "max";
+      field[attr] = attributes.max;
+      delete attributes.max;
+    }
+  },
+  addMinOfZeroToIdFields(key, field) {
+    if (key === "id") {
+      field.minimum = 0;
+    }
+  },
   processExtraSchemaValues(model, key, value, prismaModelProps) {
     let field = model.properties[key];
     const { __attributes, ...prismaProps } = prismaModelProps;
-    // prismaProps might only be used for it's optional field
-    // and attrs for default
+
+    this.addMinOfZeroToIdFields(key, field);
+    this.parseFrontierMinAndMaxHelpers(__attributes, field);
 
     field = {
       ...field,
       ...__attributes,
-      // __prisma: ,
     };
 
     // Add default attribute to schema
@@ -189,13 +224,14 @@ generatorHandler({
 
     try {
       for await (const outputPath of outputDirs) {
-        // console.log({ outputPath });
-        await fs.promises.mkdir(outputPath, {
+        const outPath = path.resolve(this.schemaRoot, outputPath);
+        console.log({ outPath });
+        await fs.promises.mkdir(outPath, {
           recursive: true,
         });
         await fs.promises.writeFile(
           path.join(
-            outputPath,
+            outPath,
             options.generator.config.fileName || "models-schema.json"
           ),
           JSON.stringify(this.jsonSchema, null, 2)

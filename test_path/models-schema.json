@@ -13,7 +13,8 @@
           "format": "date-time"
         },
         "email": {
-          "type": "string"
+          "type": "string",
+          "pattern": "test"
         },
         "weight": {
           "type": [

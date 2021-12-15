@@ -6,6 +6,7 @@
       "properties": {
         "id": {
           "type": "integer",
+          "minimum": 0,
           "cool": "prop"
         },
         "createdAt": {
@@ -14,6 +15,7 @@
         },
         "email": {
           "type": "string",
+          "minLength": 4,
           "pattern": "test"
         },
         "weight": {
@@ -21,13 +23,15 @@
             "number",
             "null"
           ],
+          "minimum": 3,
           "default": "2.3"
         },
         "is18": {
           "type": [
             "boolean",
             "null"
-          ]
+          ],
+          "min": 4
         },
         "name": {
           "type": [
@@ -74,9 +78,9 @@
           "items": {
             "type": "string"
           },
+          "minItems": 2,
           "maxItems": 1,
           "monkeies": "three",
-          "minItems": 2,
           "monkey": "three"
         },
         "biography": {
@@ -89,13 +93,15 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "integer"
+          "type": "integer",
+          "minimum": 0
         },
         "user": {
           "$ref": "#/definitions/User"
         },
         "monkeyWrench": {
           "type": "string",
+          "maxLength": 8,
           "default": "\"tool\""
         }
       },
