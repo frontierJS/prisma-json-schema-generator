@@ -37,7 +37,7 @@ generatorHandler({
     }, {});
   },
   async onGenerate(options) {
-    console.log(options);
+    // console.log(options);
     this.schemaRoot = path.dirname(options.schemaPath);
 
     // Output Paths
