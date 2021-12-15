@@ -65,6 +65,6 @@
     "semantic-release": "semantic-release"
   },
   "bin": {
-    "prisma-generator-frontierjs": "dist/cli.js"
+    "prisma-generator-frontier": "dist/cli.js"
   }
 }
