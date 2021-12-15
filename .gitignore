@@ -47,3 +47,6 @@ dist/
 dmmf.json
 
 .json
+
+.db_path
+.test_path
