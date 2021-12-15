@@ -1,11 +1,4 @@
-[![Actions Status](https://github.com/valentinpalkovic/prisma-json-schema-generator/workflows/build/badge.svg)](https://github.com/valentinpalkovic/prisma-json-schema-generator/actions)
-[![Code QL](https://github.com/valentinpalkovic/prisma-json-schema-generator/workflows/CodeQL/badge.svg)](https://github.com/valentinpalkovic/prisma-json-schema-generator/workflows/CodeQL/badge.svg)
-[![npm](https://img.shields.io/npm/v/prisma-json-schema-generator)](https://www.npmjs.com/package/prisma-json-schema-generator)
-[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/valentinpalkovic/prisma-json-schema-generator/blob/master/LICENSE)
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-[![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/Naereen/badges/)
-
-# Prisma JSON Schema Generator
+# Prisma Generator Frontier
 
 A generator, which takes a Prisma 2 `schema.prisma` and generates a JSON Schema in version 7 of the specification (https://json-schema.org/).
 
@@ -16,14 +9,14 @@ A generator, which takes a Prisma 2 `schema.prisma` and generates a JSON Schema 
 npm:
 
 ```shell
-npm i @frontierjs/prisma-json-frontier
+npm i @frontierjs/prisma-generator-frontier
 ```
 
 **2. Add the generator to the schema**
 
 ```prisma
 generator jsonSchema {
-  provider = "prisma-json-frontier"
+  provider = "prisma-generator-frontier"
 }
 ```
 
@@ -31,7 +24,7 @@ With a custom output path (default=./json-schema)
 
 ```prisma
 generator jsonSchema {
-  provider = "prisma-json-schema-generator"
+  provider = "prisma-generator-frontier"
   output = "custom-output-path"
 }
 ```
@@ -40,7 +33,7 @@ Additional options
 
 ```prisma
 generator jsonSchema {
-  provider = "prisma-json-schema-generator"
+  provider = "prisma-generator-frontier"
   keepRelationScalarFields = "true"
   schemaId = "some-schema-id"
 }

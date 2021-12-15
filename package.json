@@ -1,5 +1,5 @@
 {
-  "name": "@frontierjs/prisma-json-frontier",
+  "name": "@frontierjs/prisma-generator-frontier",
   "version": "0.0.2",
   "main": "dist/index.js",
   "license": "MIT",
