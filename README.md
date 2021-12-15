@@ -16,20 +16,14 @@ A generator, which takes a Prisma 2 `schema.prisma` and generates a JSON Schema 
 npm:
 
 ```shell
-npm install prisma-json-schema-generator --save-dev
-```
-
-yarn:
-
-```shell
-yarn add -D prisma-json-schema-generator
+npm i @frontierjs/prisma-json-frontier
 ```
 
 **2. Add the generator to the schema**
 
 ```prisma
 generator jsonSchema {
-  provider = "prisma-json-schema-generator"
+  provider = "prisma-json-frontier"
 }
 ```
 
