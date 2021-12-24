@@ -82,7 +82,7 @@ generatorHandler({
         console.log("ERROR::: in db.js:", { o });
       }
     } catch (e) {
-      console.log({ e });
+      // console.log({ e });
       return jsonString;
     }
   },
@@ -104,7 +104,6 @@ generatorHandler({
     if (!prop || prop.type !== "comment") return attributes;
 
     const key = this.attributesKey;
-    // console.log('key', key)
     if (!prop.text.startsWith(key)) return attributes;
 
     const json = this.convertToJson(prop.text.substr(key.length));
@@ -115,7 +114,6 @@ generatorHandler({
   },
   parseFrontierMinAndMaxHelpers(attributes, field) {
     const type = Array.isArray(field.type) ? field.type[0] : field.type;
-    // console.log(field);
 
     const map = {
       "number-min": "minimum",
@@ -179,15 +177,9 @@ generatorHandler({
     //   ...__attributes,
     //   ...prismaProps,
     // };
-    // console.log(field);
     model.properties[key] = field;
   },
   appendAttributesToJsonSchema(modelDefs) {
-    // console.log(
-    //   JSON.stringify(modelDefs),
-    //   "\n\n",
-    //   JSON.stringify(this.jsonSchema)
-    // );
     Object.entries(modelDefs).forEach(
       ([name, { __attributes, properties }]) => {
         const model = this.jsonSchema.definitions[name];
@@ -210,7 +202,6 @@ generatorHandler({
         const matches = outputPath.matchAll(/env\('(.*)'\)/g);
         const res = [...matches];
         if (!res.length) {
-          // console.log(path.resolve(this.schemaRoot, outputPath));
           return {
             value: path.resolve(this.schemaRoot, outputPath),
           };
