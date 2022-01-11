@@ -216,7 +216,7 @@ generatorHandler({
     try {
       for await (const outputPath of outputDirs) {
         const outPath = path.resolve(this.schemaRoot, outputPath);
-        console.log({ outPath });
+        // console.log({ outPath });
         await fs.promises.mkdir(outPath, {
           recursive: true,
         });
