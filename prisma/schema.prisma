@@ -37,6 +37,7 @@ model User {
   biography Json
 }
 
+//@ alias:["Page"]
 model Post {
   id           Int     @id @default(autoincrement())
   user         User   @relation(fields: [userId], references: [id])

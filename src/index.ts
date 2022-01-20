@@ -56,6 +56,9 @@ generatorHandler({
     // Merge fields with comments to JSON schema
     this.appendAttributesToJsonSchema(modelDefs);
 
+    // Make any alias models needed
+    this.appendAliasModelsToJsonSchema();
+
     // Send to outputs
     await this.sendToOutputs(options);
   },
@@ -189,6 +192,24 @@ generatorHandler({
         });
       }
     );
+  },
+  appendAliasModelsToJsonSchema() {
+    Object.entries(this.jsonSchema.definitions).forEach(([key, value]) => {
+      if (value.__attributes.alias) {
+        const alias = [].concat(value.__attributes.alias);
+        alias.forEach((name) => {
+          this.jsonSchema.definitions[name] = {
+            properties: { ...value.properties },
+            __attributes: { ...value.__attributes },
+          };
+          this.jsonSchema.definitions[name].__attributes.alias = key;
+          // set on properties too
+          this.jsonSchema.properties[name.toLowerCase()] = {
+            ref: "#/defintions/" + name,
+          };
+        });
+      }
+    });
   },
   async sendToOutputs(options) {
     if (!this.outputPaths.length || !options.generator.output) {
