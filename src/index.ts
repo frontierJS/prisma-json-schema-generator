@@ -205,7 +205,7 @@ generatorHandler({
           this.jsonSchema.definitions[name].__attributes.alias = key;
           // set on properties too
           this.jsonSchema.properties[name.toLowerCase()] = {
-            ref: "#/defintions/" + name,
+            $ref: "#/definitions/" + name,
           };
         });
       }
