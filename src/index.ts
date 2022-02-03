@@ -117,7 +117,6 @@ generatorHandler({
   },
   parseFrontierMinAndMaxHelpers(attributes, field) {
     const type = Array.isArray(field.type) ? field.type[0] : field.type;
-
     const map = {
       "number-min": "minimum",
       "number-max": "maximum",
