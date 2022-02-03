@@ -120,12 +120,16 @@ generatorHandler({
     const map = {
       "number-min": "minimum",
       "number-max": "maximum",
-      "integer-max": "maximum",
+
       "integer-min": "minimum",
+      "integer-max": "maximum",
+
       "string-min": "minLength",
       "string-max": "maxLength",
+
       "array-min": "minItems",
       "array-max": "maxItems",
+
       "object-min": "minProperties",
       "object-max": "maxProperties",
     };
@@ -172,12 +176,6 @@ generatorHandler({
       field.default = defaultAttr.args[0].value;
     }
 
-    // Add prisma attributes
-    // field.__prisma = {
-    //     __fromAttributes: __attributes,
-    //   ...__attributes,
-    //   ...prismaProps,
-    // };
     model.properties[key] = field;
   },
   appendAttributesToJsonSchema(modelDefs) {
