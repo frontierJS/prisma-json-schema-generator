@@ -24,6 +24,9 @@ model User {
   //@ min:4
   is18        Boolean?
   name        String?
+
+  //@ min:4
+  successorNum Int?
   successorId Int?
   successor   User?    @relation("BlogOwnerHistory", fields: [successorId], references: [id])
   predecessor User?    @relation("BlogOwnerHistory")

@@ -121,9 +121,8 @@ generatorHandler({
     const map = {
       "number-min": "minimum",
       "number-max": "maximum",
-      "int-max": "maximum",
-      "int-min": "minimum",
-      "int-max": "maximum",
+      "integer-max": "maximum",
+      "integer-min": "minimum",
       "string-min": "minLength",
       "string-max": "maxLength",
       "array-min": "minItems",
