@@ -4,7 +4,7 @@ generator client {
 
 generator docs {
   provider = "node ./dist/index.js"
-  outputs = "env('DB_PATH'), env('TEST_PATH')"
+  outputs  = "env('DB_PATH'), env('TEST_PATH')"
 }
 
 datasource db {
@@ -14,25 +14,25 @@ datasource db {
 
 model User {
   //@ cool:"prop"
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
   //@ pattern:"test"
   //@ min:4
-  email       String   @unique
+  email     String   @unique
   //@ min:3
-  weight      Float?   @default(2.3)
+  weight    Float?   @default(2.3)
   //@ min:4
-  is18        Boolean?
-  //@ examples:["client","lead"]
-  name        String?
+  is18      Boolean?
+  name      String?
+  model     String?
 
   //@ min:4
   successorNum Int?
-  successorId Int?
-  successor   User?    @relation("BlogOwnerHistory", fields: [successorId], references: [id])
-  predecessor User?    @relation("BlogOwnerHistory")
-  role        Role     @default(USER)
-  posts       Post[]
+  successorId  Int?   @unique
+  successor    User?  @relation("BlogOwnerHistory", fields: [successorId], references: [id])
+  predecessor  User?  @relation("BlogOwnerHistory")
+  role         Role   @default(USER)
+  posts        Post[]
 
   //@ min:2 monkey:"three"
   //@ max:1 monkeies:"three"
@@ -43,7 +43,7 @@ model User {
 
 //@ alias:["Page"]
 model Post {
-  id           Int     @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   user         User   @relation(fields: [userId], references: [id])
   userId       Int
   //@ max:8
