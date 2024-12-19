@@ -98,11 +98,11 @@ generatorHandler({
     // add brackets and commas between fields
     // text =>  key:"value" json:true another:4
     //FIXME: how to handle // array:["asdfsa", (space here) "asdfasdf"]
-    console.log(text);
+    // console.log(text);
     text = "{" + text.trim().split(" ").join(",") + "}";
-    console.log(text);
+    // console.log(text);
     const jsonString = stringifyKeys(text);
-    console.log(jsonString);
+    // console.log(jsonString);
 
     return this.tryParseJSON(jsonString);
   },
